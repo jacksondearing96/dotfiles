@@ -62,10 +62,15 @@ call plug#begin()
 	Plug 'easymotion/vim-easymotion' " Easy navigation using character mappings.
 	Plug 'christoomey/vim-tmux-navigator' " Consistent navigation between VIM and TMUX.
 	Plug 'takac/vim-hardtime' " Make vim harder!
+
 	Plug 'rakr/vim-one' " Colour scheme.
+    Plug 'gosukiwi/vim-atom-dark'
+
 	Plug 'scrooloose/nerdcommenter' "Comment out code.
 	Plug 'vim-airline/vim-airline' " Pretty status line.
-    Plug 'ycm-core/YouCompleteMe' " Autocompletion.
+
+    Plug 'ycm-core/YouCompleteMe'
+
 	Plug 'vim-airline/vim-airline-themes' " Airline themes.
 	Plug 'mhinz/vim-signify' " Highlight file changes.
 	Plug 'farmergreg/vim-lastplace' "Remember where you were last in the file.
@@ -102,22 +107,8 @@ map <leader>k :AutoFormatBuffer<CR>
 :let mapleader = ' '
 
 " Set color scheme.
-" Enable true color.
-if (empty($TMUX))
-  if (has("nvim"))
-    "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
-    let $NVIM_TUI_ENABLE_TRUE_COLOR=1
-  endif
-  "For Neovim > 0.1.5 and Vim > patch 7.4.1799 < https://github.com/vim/vim/commit/61be73bb0f965a895bfb064ea3e55476ac175162 >
-  "Based on Vim patch 7.4.1770 (`guicolors` option) < https://github.com/vim/vim/commit/8a633e3427b47286869aa4b96f2bfc1fe65b25cd >
-  " < https://github.com/neovim/neovim/wiki/Following-HEAD#20160511 >
-  if (has("termguicolors"))
-    set termguicolors
-  endif
-endif
-
 let g:airline_theme='one'
-colorscheme one
+colorscheme atom-dark-256
 set background=dark
 
 " Set airline theme and remove encoding section.
