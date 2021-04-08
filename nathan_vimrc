@@ -1,0 +1,269 @@
+" This does all the basics
+source $VIMRUNTIME/vimrc_example.vim
+
+" Sets where to look for tags files, recursively looks in parents folders if
+" not found locally.
+:set tags=./tags;
+" Generated list of library tags.
+"source /home/npetchell/code/tagLocations.vim
+
+" Set to use bash with custom aliases
+set shell=/bin/bash
+let $BASH_ENV = '~/.bash_aliases'
+
+" Load plugins
+set nocompatible
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'gmarik/Vundle.vim'
+Plugin 'vim-scripts/zoom.vim'
+Plugin 'vim-scripts/a.vim'
+Plugin 'mbbill/undotree'
+Plugin 'scrooloose/nerdtree'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'artoj/qmake-syntax-vim'
+Plugin 'mfukar/robotframework-vim'
+Plugin 'scrooloose/syntastic'
+Plugin 'vim-scripts/taglist.vim'
+Plugin 'vim-scripts/grep.vim'
+Plugin 'yssl/QFEnter'
+Plugin 'bling/vim-airline'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'vim-scripts/camelcasemotion'
+Plugin 'tpope/vim-commentary'
+Plugin 'tpope/vim-dispatch'
+Plugin 'tpope/vim-fugitive'
+Plugin 'tpope/vim-repeat'
+Plugin 'tpope/vim-surround'
+Plugin 'tpope/vim-unimpaired'
+Plugin 'jlanzarotta/bufexplorer'
+Plugin 'solarnz/thrift.vim'
+Plugin 'rubberduck203/aosp-vim'
+Plugin 'PProvost/vim-ps1'
+" lsp autocomplete
+Plugin 'prabirshrestha/asyncomplete.vim'
+Plugin 'prabirshrestha/async.vim'
+Plugin 'prabirshrestha/vim-lsp'
+Plugin 'prabirshrestha/asyncomplete-lsp.vim'
+" lsp snippets
+Plugin 'SirVer/ultisnips'
+Plugin 'thomasfaingnaert/vim-lsp-snippets'
+Plugin 'thomasfaingnaert/vim-lsp-ultisnips'
+
+call vundle#end()
+filetype on
+
+" Add native gdb integration
+packadd termdebug
+
+" Register c-style language server clangd
+if executable('clangd')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'clangd',
+        \ 'cmd': {server_info->['clangd', '--background-index']},
+        \ 'whitelist': ['c', 'cpp', 'cxx', 'objc', 'objcpp', 'cc'],
+        \ })
+endif
+
+" Register python language server
+if executable('pyls')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'pyls',
+        \ 'cmd': {server_info->['pyls']},
+        \ 'whitelist': ['python'],
+        \ 'workspace_config': {'pyls': {'plugins': {'pydocstyle': {'enabled': v:true}}}}
+        \ })
+endif
+
+" Stop the language server, will restart on next buffer load (manually trigger with :e)
+nnoremap <silent> <S-F12> :call lsp#stop_server('clangd')<CR>
+
+" Key bindings for vim-lsp.
+nn <silent> <S-F3> :LspReferences<cr>
+nn <silent> <S-F4> :LspWorkspaceSymbol<cr>
+nn <silent> <S-F5> :LspDocumentSymbol<cr>
+
+" options for vim-lsp and asyncomplete
+let g:lsp_diagnostics_echo_cursor = 1
+function! s:on_lsp_buffer_enabled() abort
+    setlocal omnifunc=lsp#complete
+    setlocal signcolumn=yes
+    nmap <buffer> gd <plug>(lsp-definition)
+    nmap <buffer> <F2> <plug>(lsp-rename)
+endfunction
+
+augroup lsp_install
+    au!
+    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
+
+" Snippets configuration
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+
+" Working directory of vim will change automatically to the directory of the
+" loaded buffer. Important for tags.
+set autochdir
+
+" Add '.tpp' file extension to C++.
+au BufNewFile,BufRead *.tpp set filetype=cpp
+
+" Set the prettiest font and colourscheme
+set guifont=Menlo\ Regular:h18
+syntax enable
+set background=dark
+colorscheme solarized
+
+" Options for :Grep
+let Grep_Default_Options = '-Irsn --exclude-dir _build --exclude-dir packages --exclude-dir .svn --exclude-dir bin --exclude-dir .git --exclude tags --exclude *.csproj'
+
+" Options for Alternate (a.vim).
+let g:alternateSearchPath = 'sfr:..,sfr:/cpp,sfr:/src,sfr:/test,sfr:../../src/libMSD/core,sfr:../../src/libMSD/interface,sfr:../../../include/libMSD,sfr:../core,sfr:../node_wrapper,sfr:../../include/libFramer,sfr:../../src/libFramer,sfr:../include,sfr:../src'
+let g:alternateExtensions_cxx = "h,hxx"
+let g:alternateExtensions_hxx = "c,cxx"
+
+
+" This means doing gg=G on an xml file will use xmllint to format the file.
+au FileType xml setlocal equalprg=xmllint\ --format\ --recover\ -\ 2>/dev/null
+
+" Use spaces instead of tabs in makefiles.
+au FileType mk setlocal expandtab
+
+" _lvimrc files can be created in directories to overwrite settings in this
+let g:localvimrc_name = '.lvimrc'
+let g:localvimrc_ask = 0
+
+" Enables airline buffer tabs
+let g:airline#extensions#tabline#enabled = 1
+
+" Enable persistent undo
+set undofile
+set undodir=~/.vim/VimTempFiles/Undo
+
+" Store ~file backups and swaps in a central location
+set backupdir=~/.vim/VimTempFiles/Backups
+set directory=~/.vim/VimTempFiles/Swaps
+
+" Set line numbers to be shown
+set number
+
+" Turn on spell check by default
+set spell
+
+" Set to use spaces instead of tabs with a width of 4
+set shiftwidth=4
+set tabstop=4
+set expandtab
+
+" Line length settings 132 chars for code 80 chars for comments
+set textwidth=140
+set formatoptions=cq textwidth=139 foldignore= wildignore+=*.py[co]
+
+" Highlight end of line whitespace in red but not in insert mode
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$/
+autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+autocmd BufWinLeave * call clearmatches()
+
+"Remove Trailing whitespace
+nmap <S-F7> :%s/\s\+$//g<C-M>
+
+" Set the status line
+set statusline=                              " clear the statusline for when vimrc is reloaded
+set statusline+=%{fugitive#statusline()}     " git branch
+set statusline+=%f\                          " file name
+set statusline+=%h%m%r%w                     " flags
+set statusline+=[%{strlen(&ft)?&ft:'none'},  " filetype
+set statusline+=%{strlen(&fenc)?&fenc:&enc}, " encoding
+set statusline+=%{&fileformat}]              " file format
+set statusline+=%=                           " right align
+set statusline+=%{synIDattr(synID(line('.'),col('.'),1),'name')}\  " highlight
+set statusline+=%b,0x%-8B\                   " current char
+set statusline+=%-14.(%l,%c%V%)\ %<%P        " offset
+set laststatus=2                             " always show the status line cause it's amazing!
+
+" Settings for cindent
+set cinoptions=g0,:0,(0,Ws
+
+" NERD_tree config
+let NERDTreeChDirMode=2
+let NERDTreeIgnore=['\.vim$', '\~$', '\.pyc$', '\.swp$', '\.d$', '\.o$']
+let NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$',  '\~$']
+let NERDTreeShowBookmarks=1
+let NERDTreeDirArrows=1
+map <F3> :NERDTreeToggle<CR>
+map <C-F3> :NERDTreeFind<CR>
+"
+" TagList Plugin Configuration
+let Tlist_Ctags_Cmd='ctags'
+let Tlist_GainFocus_On_ToggleOpen = 1
+let Tlist_Use_Right_Window = 1
+let Tlist_File_Fold_Auto_Close = 1
+let Tlist_Exit_OnlyWindow = 1
+map <F4> :TlistToggle<CR>
+
+" Clear any search highlighting when pressing esc in command mode
+nmap <Esc> :noh<CR>
+
+map <UP> gk
+map <DOWN> gj
+
+" Make enter insert a \n below and shift-enter above in command mode
+map <S-Enter> O<Esc>
+map <CR> o<Esc>
+
+" Make Ctrl+j split the line at the cursor in command mode (opposite of Shift+j)
+map <C-J> a<CR><Esc>
+
+" Toggle spell check underlining
+nmap <F10> :set spell!<C-M>
+" Toggle search highlighting
+nmap <F9> :set hls!<C-M>
+" Toggle showing invisible characters
+nmap <F8> :set list!<C-M>
+" Toggle showing buffer explorer
+nnoremap <silent> <F7> :ToggleBufExplorer<CR>
+
+"Replace tabs with spaces
+map <F6> :%s/\t/    /g<C-M>
+imap <F6> <Esc><F6>
+
+" Toggle undo tree plugin.
+nnoremap <F5> :UndotreeToggle<CR>
+
+" Run ctags on directory selected in NerdTree.
+function! CreateTags()
+    let curNodePath = g:NERDTreeFileNode.GetSelected().path.str()
+    "exec ':!ctags --languages=c++,c,python --recurse --extra=+fq --fields=+laiS --c++-kinds=+p -f ' . curNodePath . '/tags ' . curNodePath
+    exec ':!ctags --languages=c++,c,python --recurse --extra=+fq --fields=+laiS --c++-kinds=+p -f ' . curNodePath . '/tags ' . curNodePath
+endfunction
+nmap <silent> <F12> :call CreateTags()<CR>
+
+function! ToggleClangFormat()
+    if !exists('#ClangFormat#BufWritePre')
+        augroup ClangFormat
+            autocmd!
+            " Add clang-format on save of C files.
+            function! Formatonsave()
+              let l:lines="all"
+              py3f /usr/local/Cellar/clang-format/11.1.0/share/clang/clang-format.py
+            endfunction
+            autocmd BufWritePre *.hpp,*.cpp,*.hxx,*.cxx call Formatonsave()
+        augroup END
+    else
+        augroup ClangFormat
+            autocmd!
+        augroup END
+    endif
+endfunction
+
+if !exists('#ClangFormat#BufWritePre')
+    call ToggleClangFormat()
+endif
+
